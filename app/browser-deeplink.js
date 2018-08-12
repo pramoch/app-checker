@@ -6,7 +6,7 @@
  *
  * MIT License
  */
- 
+
 (function (root, factory) {
     if ( typeof define === 'function' && define.amd ) {
         define("deeplink", factory(root));
@@ -16,7 +16,7 @@
         root["deeplink"] = factory(root);
     }
 })(window || this, function(root) {
- 
+
     "use strict"
 
     /**
@@ -63,12 +63,12 @@
      * Generate the app store link for iOS / Apple app store
      *
      * @private
-     * @returns {String} App store itms-apps:// link 
+     * @returns {String} App store itms-apps:// link
      */
     var getStoreURLiOS = function() {
         var baseurl = "itms-apps://itunes.apple.com/app/";
         var name = settings.iOS.appName;
-        var id = settings.iOS.appId; 
+        var id = settings.iOS.appId;
         return (id && name) ? (baseurl + name + "/id" + id + "?mt=8") : null;
     }
 
@@ -81,7 +81,7 @@
     var getStoreURLAndroid = function() {
         var baseurl = "market://details?id=";
         var id = settings.android.appId;
-        return id ? (baseurl + id) : null;        
+        return id ? (baseurl + id) : null;
     }
 
     /**
@@ -132,8 +132,8 @@
      * @returns {Boolean} true/false
      */
     var isIOS = function() {
-        return navigator.userAgent.match('iPad') || 
-               navigator.userAgent.match('iPhone') || 
+        return navigator.userAgent.match('iPad') ||
+               navigator.userAgent.match('iPhone') ||
                navigator.userAgent.match('iPod');
     }
 
@@ -152,8 +152,8 @@
      * The fallback link is either the storeUrl for the platofrm
      * or the fallbackWebUrl for the current platform.
      * The time delta comparision is to prevent the app store
-     * link from opening at a later point in time. E.g. if the 
-     * user has your app installed, opens it, and then returns 
+     * link from opening at a later point in time. E.g. if the
+     * user has your app installed, opens it, and then returns
      * to their browser later on.
      *
      * @private
@@ -161,7 +161,7 @@
      * @returns {Function} Function to be executed by setTimeout
      */
     var openFallback = function(ts) {
-        return function() {                        
+        return function() {
             var link = (settings.fallbackToWeb) ?  getWebLink() : getStoreLink();
             var wait = settings.delay + settings.delta;
             if (typeof link === "string" && (Date.now() - ts) < wait) {
@@ -192,7 +192,7 @@
      * @return {Boolean} true, if you're on a mobile device and the link was opened
      */
     var open = function(uri) {
-        
+
         if (!isMobile()) {
             alert("ให้บริการบนสมาร์ทโฟนและแท็บแล็ตเท่านั้น");
             return false;
@@ -204,13 +204,16 @@
 
         if (isAndroid() && !navigator.userAgent.match(/Firefox/)) {
             var matches = uri.match(/([^:]+):\/\/(.*)$/i);
-            uri = "intent://" + matches[2] + "#Intent;scheme=" + matches[1];
-            uri += ";package=" + settings.android.appId + ";end";
+
+            if (matches[1] !== 'http' && matches[1] !== 'https') {
+              uri = "intent://" + matches[2] + "#Intent;scheme=" + matches[1];
+              uri += ";package=" + settings.android.appId + ";end";
+            }
         }
 
         if (settings.fallback|| settings.fallbackToWeb) {
             timeout = setTimeout(openFallback(Date.now()), settings.delay);
-        }        
+        }
         $(document).on('hide', function() {
             clearTimeout(timeout);
         });
